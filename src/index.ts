@@ -1,7 +1,6 @@
 import 'pixi';
 import 'p2';
 import * as Phaser from 'phaser';
-import './register-sw';
 
 import { BootState } from './states/boot';
 import { PreloadState } from './states/preload';
