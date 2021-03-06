@@ -72,6 +72,14 @@ export class GameState extends State {
     this.active = true;
   }
 
+  minimizeMemoryUsage() {
+    try {
+      if (typeof window.navigator['minimizeMemoryUsage'] === 'function') {
+        window.navigator['minimizeMemoryUsage']();
+      }
+    } catch (_) { }
+  }
+
   create() {
     this.setTiles();
     this.initLayers();
@@ -87,8 +95,19 @@ export class GameState extends State {
 
     this.initUI();
     this.initSfx();
+    this.mute();
+
+    this.minimizeMemoryUsage();
 
     this.sfx.intro.play();
+  }
+
+  mute() {
+    this.game.sound.mute = true;
+  }
+
+  unmute() {
+    this.game.sound.mute = false;
   }
 
   update() {
@@ -481,7 +500,7 @@ export class GameState extends State {
     this.interface = this.game.add.group();
 
     const text = this.score === 0 ? '00' : `${this.score}`;
-    this.scoreBtm = this.game.make.bitmapText(this.game.world.centerX, 16, 'kong', text, 16);
+    this.scoreBtm = this.game.make.bitmapText(this.game.world.centerX, this.game.world.bottom - 10, 'kong', text, 16);
     this.scoreBtm.anchor.set(0.5);
     this.notification = this.game.make.bitmapText(
       this.game.world.centerX,
@@ -533,7 +552,7 @@ export class GameState extends State {
           sprite = this.add.sprite(0, 0, 'pacman', 1)
             .alignTo(prevSprite, Phaser.RIGHT_CENTER, 8, 0);
         } else {
-          sprite = this.add.sprite(8, this.game.world.bottom - 24, 'pacman', 1);
+          sprite = this.add.sprite(8, this.game.world.bottom - 16, 'pacman', 1);
         }
 
         this.lifesArea.push(sprite);

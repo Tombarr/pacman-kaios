@@ -1,0 +1,33 @@
+{
+  "name": "Pac-Man",
+  "version": "1.0.0",
+  "launch_path": "/index.html",
+  "description": "Pac-Man for KaiOS",
+  "type": "privileged",
+  "icons": {
+    "128": "/apple-touch-icon.png"
+  },
+  "fullscreen": "true",
+  "developer": {
+    "name": "Game Dev",
+    "url": "https://game.dev"
+  },
+  "categories": [
+    "games"
+  ],
+  "installs_allowed_from": [
+    "*"
+  ],
+  "permissions": {
+    "audio-channel-content": { },
+    "service-worker": { }
+  },
+  "default_locale": "en-US",
+  "orientation": "portrait",
+  "cursor": false,
+  "ime_default_softkey_bar": false,
+  "chrome": {
+    "navigation": false,
+    "statusbar": "overlap"
+  }
+}

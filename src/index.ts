@@ -31,19 +31,22 @@ export class PacmanGame extends Phaser.Game {
   }
 }
 
-/**
- * Initialize game on page load.
- */
-window.onload = () => {
-  const config: Phaser.IGameConfig = {
-    width: 448,
-    height: 576,
-    renderer: Phaser.AUTO,
-    parent: 'root',
-    antialias: false, // Used to keep pixelated graphics.
-    resolution: 1,
-    forceSetTimeOut: false
-  };
+(function() {
+  /**
+   * Initialize game on page load.
+   */
+  window.onload = () => {
+    const config: Phaser.IGameConfig = {
+      width: 448,
+      height: 576,
+      renderer: Phaser.AUTO,
+      parent: 'root',
+      antialias: false, // Used to keep pixelated graphics.
+      transparent: false,
+      resolution: 1,
+      forceSetTimeOut: false
+    };
 
-  new PacmanGame(config);
-};
+    new PacmanGame(config);
+  };
+})();

@@ -1,8 +1,9 @@
 const path = require('path');
-const webpack = require('webpack');
+require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -10,7 +11,6 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 const outputPath = path.resolve(__dirname, 'dist');
-const assetsPath = path.resolve(__dirname, 'assets');
 
 const phaserRoot = path.join(__dirname, 'node_modules/phaser/build/custom/');
 
@@ -24,7 +24,7 @@ const sw = new SWPrecacheWebpackPlugin({
   minify: true,
   staticFileGlobs: [
     `${outputPath}/assets/**/*`,
-    `${outputPath}/*.{html,json,ico,png,svg}`
+    `${outputPath}/*.{html,json,ico,png,svg,css}`
   ],
   stripPrefix: `${outputPath}/`
 });
@@ -86,10 +86,14 @@ module.exports = {
     minimizer: [
       new UglifyJsPlugin({
         uglifyOptions: {
-          compress: IS_PROD,
           output: {
             comments: !IS_PROD
-          }
+          },
+          mangle: IS_PROD,
+          warnings: !IS_PROD,
+          compress: {
+            drop_console: IS_PROD
+          },
         }
       })
     ]
@@ -102,14 +106,17 @@ module.exports = {
         to: path.join(__dirname, 'dist/assets/')
       },
       {
-        from: path.join(__dirname, 'src/*.{json,ico,png,svg,xml}'),
+        from: path.join(__dirname, 'src/*.{json,ico,png,svg,xml,webapp,css}'),
         to: path.join(__dirname, 'dist/')
       }
     ]),
     new HtmlWebpackPlugin({
       title: 'Pacman PWA',
-      inject: true,
+      inject: 'head',
       template: 'index.html'
+    }),
+    new ScriptExtHtmlWebpackPlugin({
+      defaultAttribute: 'defer',
     }),
     ...PLUGINS
   ],
