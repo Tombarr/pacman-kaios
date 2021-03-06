@@ -3,12 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": "src",
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": false,
     "moduleResolution": "node",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "target": "es5",
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
+    "removeComments": true,
+    "target": "es6",
     "typeRoots": [
       "node_modules/@types"
     ],

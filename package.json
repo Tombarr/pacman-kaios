@@ -1,7 +1,7 @@
 {
-  "name": "pacman-pwa",
+  "name": "pacman-kaios",
   "version": "1.0.0",
-  "description": "Pacman PWA arcade game build with Phaser & TypeScript.",
+  "description": "Pac-Man for KaiOS",
   "main": "index.ts",
   "scripts": {
     "start": "webpack-dev-server --inline --hot --port 3000",
@@ -13,14 +13,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vitaliy-bobrov/pacman-pwa.git"
+    "url": "git+https://github.com/Tombarr/pacman-kaios.git"
   },
-  "author": "Vitaliy Bobrov <bobrov1989@gmail.com> (https://vitaliy-bobrov.github.io)",
-  "license": "MIT",
+  "author": "Tom Barrasso <tom@barrasso.me> (https://barrasso.me)",
   "bugs": {
-    "url": "https://github.com/vitaliy-bobrov/pacman-pwa/issues"
+    "url": "https://github.com/Tombarr/pacman-kaios/issues"
   },
-  "homepage": "https://vitaliy-bobrov.github.io/pacman-pwa/",
+  "homepage": "https://github.com/Tombarr/pacman-kaios",
   "dependencies": {
     "phaser": "^2.6.2",
     "phaser-swipe": "^1.0.4"

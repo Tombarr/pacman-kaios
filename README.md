@@ -1,6 +1,6 @@
-# Pacman PWA
+# Pac-Man KaiOS
 
-Pacman game built as a Progressive Web App.
+Pac-Man game built for KaiOS, forked from [Pacman PWA](https://github.com/vitaliy-bobrov/pacman-pwa).
 
 🎮 [Play Game](https://vitaliy-bobrov.github.io/pacman-pwa/)
 

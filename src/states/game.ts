@@ -8,6 +8,7 @@ import { Pill } from '../objects/pill';
 import { Portal } from '../objects/portal';
 import { Pacman } from '../objects/pacman';
 import { Ghost } from '../objects/ghost';
+import { MozWakeLock } from '../utils/mozwakelock';
 import {
   getObjectsByType,
   getRespawnPoint,
@@ -39,14 +40,18 @@ export class GameState extends State {
   inky: Ghost;
   clyde: Ghost;
 
-
   controls: Phaser.CursorKeys;
   spaceKey: Phaser.Key;
+  enterKey: Phaser.Key;
+  backKey: Phaser.Key;
+  endCallKey: Phaser.Key;
 
   swipe: Swipe;
   isTouch: boolean;
 
   sfx: SFX;
+
+  screenLock: MozWakeLock;
 
   private interface: Phaser.Group;
   private lifesArea: Phaser.Sprite[] = [];
@@ -76,6 +81,23 @@ export class GameState extends State {
     try {
       if (typeof window.navigator['minimizeMemoryUsage'] === 'function') {
         window.navigator['minimizeMemoryUsage']();
+      }
+    } catch (_) { }
+  }
+
+  requestWakeLock() {
+    try {
+      if (!this.screenLock && typeof window.navigator['requestWakeLock'] === 'function') {
+        this.screenLock = window.navigator['requestWakeLock']('screen');
+      }
+    } catch (_) { }
+  }
+
+  releaseWakeLock() {
+    try {
+      if (this.screenLock && typeof this.screenLock['unlock'] === 'function') {
+        this.screenLock.unlock();
+        this.screenLock = null;
       }
     } catch (_) { }
   }
@@ -592,16 +614,36 @@ export class GameState extends State {
     };
   }
 
+  private togglePause() {
+    this.game.paused = !this.game.paused;
+  }
+
+  private onBeforeExit() {
+    if (this.active) {
+      const c = confirm("Exit?");
+      if (c) {
+        window.close();
+      }
+    }
+  }
+
   /**
    * Set game controls.
    */
   private setControls() {
-    if (this.isTouch) {
-      this.swipe = new Swipe(this.game, SwipeModel);
-    } else {
-      this.spaceKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-      this.controls = this.input.keyboard.createCursorKeys();
-    }
+    this.swipe = new Swipe(this.game, SwipeModel);
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    this.enterKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+    this.backKey = this.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+    this.endCallKey = this.input.keyboard.addKey(8)
+
+    this.controls = this.input.keyboard.createCursorKeys();
+
+    this.enterKey.onDown.add(this.togglePause.bind(this));
+    this.spaceKey.onDown.add(this.togglePause.bind(this));
+
+    this.backKey.onDown.add(this.onBeforeExit.bind(this));
+    this.endCallKey.onDown.add(this.onBeforeExit.bind(this));
   }
 
   /**
