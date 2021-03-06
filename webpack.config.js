@@ -4,7 +4,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
-const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
@@ -18,17 +17,6 @@ const phaserPath = path.join(phaserRoot, 'phaser-split.js');
 const pixiPath = path.join(phaserRoot, 'pixi.js');
 const p2Path = path.join(phaserRoot, 'p2.js');
 
-const sw = new SWPrecacheWebpackPlugin({
-  cacheId: 'pacman-cache',
-  filename: 'service-worker.js',
-  minify: true,
-  staticFileGlobs: [
-    `${outputPath}/assets/**/*`,
-    `${outputPath}/*.{html,json,ico,png,svg,css}`
-  ],
-  stripPrefix: `${outputPath}/`
-});
-
 const bs = new BrowserSyncPlugin(
   {
     open: false,
@@ -41,7 +29,7 @@ const bs = new BrowserSyncPlugin(
   }
 );
 
-PLUGINS = IS_PROD ? [sw] : [bs];
+PLUGINS = IS_PROD ? [] : [bs];
 
 function exposeRules(modulePath, name) {
   return {
@@ -53,6 +41,7 @@ function exposeRules(modulePath, name) {
 
 module.exports = {
   devtool: IS_PROD ? false : 'cheap-source-map',
+  mode: process.env.NODE_ENV,
   entry: {
     pacman: path.resolve(__dirname, 'src/index.ts')
   },
@@ -106,7 +95,7 @@ module.exports = {
         to: path.join(__dirname, 'dist/assets/')
       },
       {
-        from: path.join(__dirname, 'src/*.{json,ico,png,svg,xml,webapp,css}'),
+        from: path.join(__dirname, 'src/*.{json,js,ico,png,svg,xml,webapp,css}'),
         to: path.join(__dirname, 'dist/')
       }
     ]),

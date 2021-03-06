@@ -1,16 +1,16 @@
 {
-  "name": "Pac-Man",
+  "name": "Pak-Man",
   "version": "1.0.0",
   "launch_path": "/index.html",
-  "description": "Pac-Man for KaiOS",
+  "description": "The classic arcade game Pac-Man for KaiOS",
   "type": "privileged",
   "icons": {
-    "128": "/apple-touch-icon.png"
+    "128": "/assets/images/launcher-icon-2x.png"
   },
   "fullscreen": "true",
   "developer": {
     "name": "Game Dev",
-    "url": "https://game.dev"
+    "url": "https://github.com/Tombarr"
   },
   "categories": [
     "games"
@@ -21,6 +21,13 @@
   "permissions": {
     "audio-channel-content": { },
     "service-worker": { }
+  },
+  "locales": {
+    "en-US": {
+      "name": "Pac-Man",
+      "subtitle": "Pac-Man for KaiOS",
+      "description": "Pac-Man for KaiOS"
+    }
   },
   "default_locale": "en-US",
   "orientation": "portrait",

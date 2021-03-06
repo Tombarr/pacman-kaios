@@ -10,6 +10,7 @@ body,
 
 body {
     width: 100%;
+    width: 100vw;
     margin: 0;
     background-color: rgb(0, 0, 0);
 }
@@ -19,6 +20,35 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+:root > body > div {
+    display: block !important;
+    position: absolute !important;
+    top: 24px !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    left: 0 !important;
+    z-index: 10 !important;
+    width: 100% !important;
+    height: 100% !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+
+    /* Accomidate Status Bar */
+    height: calc(100% - 24px) !important;
+    height: calc(100vh - 24px) !important;
+}
+
+[hidden], [aria-hidden="true"] {
+    display: none;
+}
+
+frame, iframe {
+    border: none;
+    outline: none;
+    background: transparent;
 }
 
 canvas {

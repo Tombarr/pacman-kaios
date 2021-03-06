@@ -9,11 +9,31 @@ import { Portal } from '../objects/portal';
 import { Pacman } from '../objects/pacman';
 import { Ghost } from '../objects/ghost';
 import { MozWakeLock } from '../utils/mozwakelock';
+import { Kaiad } from '../utils/kaiad';
 import {
   getObjectsByType,
   getRespawnPoint,
   getTargetPoint
 } from '../utils/tilemap.helpers';
+
+export const PUBLISHER_ID = 'ed847862-2f6a-441e-855e-7e405549cf48'; // KaiAds
+
+export function getAd(test: Number = 0): Promise<Kaiad|null> {
+  return new Promise((resolve, reject) => {
+    if (typeof window['getKaiAd'] === 'function') {
+      window['getKaiAd']({
+        publisher: PUBLISHER_ID,
+        app: 'pacman',
+        slot: 'main',
+        test,
+        onerror: () => reject(null),
+        onready: (ad: Kaiad) => resolve(ad),
+      });
+    } else {
+      return reject(null);
+    }
+  });
+}
 
 /**
  * Main game state.
@@ -41,10 +61,12 @@ export class GameState extends State {
   clyde: Ghost;
 
   controls: Phaser.CursorKeys;
-  spaceKey: Phaser.Key;
+
+  kaiad: Kaiad;
+
   enterKey: Phaser.Key;
+  spaceKey: Phaser.Key;
   backKey: Phaser.Key;
-  endCallKey: Phaser.Key;
 
   swipe: Swipe;
   isTouch: boolean;
@@ -117,18 +139,54 @@ export class GameState extends State {
 
     this.initUI();
     this.initSfx();
-    this.mute();
+    this.setDefaultMute();
 
+    // KaiOS-specific
     this.minimizeMemoryUsage();
+    this.setAudioChannel('content');
+    this.requestWakeLock();
 
     this.sfx.intro.play();
+
+    // Preload KaiAds
+    window.requestAnimationFrame(this.preloadKaiAds.bind(this));
+  }
+
+  private preloadKaiAds() {
+    getAd(1) // TODO: remove 1 for publishing
+      .then((ad) => {
+        this.kaiad = ad;
+      })
+      .catch((e) => {
+        console.warn(e);
+      });
+  }
+
+  private onAdClose() {
+    this.kaiad = null;
+  }
+
+  private renderKaiAds() {
+    if (this.kaiad) {
+      this.kaiad.on('close', this.onAdClose.bind(this));
+      this.kaiad.on('click', this.onAdClose.bind(this));
+
+      this.kaiad.call('display');
+    }
+  }
+
+  setDefaultMute() {
+    const mute = Boolean((localStorage.getItem('mute') || '1') === '1');
+    this.game.sound.mute = mute;
   }
 
   mute() {
+    localStorage.setItem('mute', '1');
     this.game.sound.mute = true;
   }
 
   unmute() {
+    localStorage.setItem('mute', '0');
     this.game.sound.mute = false;
   }
 
@@ -140,7 +198,7 @@ export class GameState extends State {
 
       // Restarts state on win/game over or Pacman death.
       if ((this.spaceKey && this.spaceKey.isDown) ||
-          (this.input.pointer1 && this.input.pointer1.isDown)) {
+          (this.enterKey && this.enterKey.isDown)) {
         // Game over.
         if (this.lifes === 0) {
           this.game.state.start('Game', true, false);
@@ -457,6 +515,7 @@ export class GameState extends State {
         this.sfx.over.play();
         this.active = false;
         this.showNotification('game over');
+        this.renderKaiAds();
       } else {
         // Minus 1 Pacman life.
         pacman.die();
@@ -616,14 +675,57 @@ export class GameState extends State {
 
   private togglePause() {
     this.game.paused = !this.game.paused;
+
+    if (this.game.paused) {
+      this.showNotification('paused');
+    } else {
+      this.hideNotification();
+    }
+  }
+
+  private toggleMute() {
+    this.game.sound.mute = !this.game.sound.mute;
+    localStorage.setItem('mute', ((this.game.sound.mute) ? '1' : '0'));
   }
 
   private onBeforeExit() {
-    if (this.active) {
-      const c = confirm("Exit?");
-      if (c) {
-        window.close();
+    const c = confirm('Quit Pak-Man?');
+    if (c) {
+      this.setAudioChannel('normal');
+      this.releaseWakeLock();
+      window.close();
+    }
+  }
+
+  private setAudioChannel(channel) {
+    try {
+      if (typeof window.navigator['mozAudioChannelManager'] === 'object') {
+        window.navigator['mozAudioChannelManager']['volumeControlChannel'] = channel;
+        return (window.navigator['mozAudioChannelManager']['volumeControlChannel'] === channel);
       }
+    } catch (_) { }
+  
+    return false;
+  }
+
+  private onPressCallback(_, e: KeyboardEvent) {
+    switch (e.key) {
+      case 'GoBack':
+      case 'Escape':
+      case 'Backspace':
+      case 'EndCall':
+        this.onBeforeExit();
+        e.preventDefault();
+        return true;
+      case 'SoftRight':
+        this.toggleMute();
+        e.preventDefault();
+        return true;
+      case 'Enter':
+      case 'Space':
+        this.togglePause();
+        e.preventDefault();
+        return true;
     }
   }
 
@@ -632,18 +734,14 @@ export class GameState extends State {
    */
   private setControls() {
     this.swipe = new Swipe(this.game, SwipeModel);
-    this.spaceKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    this.input.keyboard.onPressCallback = this.onPressCallback.bind(this);
+    this.controls = this.input.keyboard.createCursorKeys();
+    this.spaceKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
     this.enterKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
     this.backKey = this.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-    this.endCallKey = this.input.keyboard.addKey(8)
-
-    this.controls = this.input.keyboard.createCursorKeys();
-
+    this.backKey.onDown.add(this.onBeforeExit.bind(this));
     this.enterKey.onDown.add(this.togglePause.bind(this));
     this.spaceKey.onDown.add(this.togglePause.bind(this));
-
-    this.backKey.onDown.add(this.onBeforeExit.bind(this));
-    this.endCallKey.onDown.add(this.onBeforeExit.bind(this));
   }
 
   /**

@@ -1,7 +1,7 @@
 {
   "lang": "en-US",
-  "name": "Pacman PWA",
-  "short_name": "Pacman PWA",
+  "name": "Pak-Man",
+  "short_name": "Pak-Man",
   "icons": [
     {
       "src": "assets/images/launcher-icon-0-75x.png",
