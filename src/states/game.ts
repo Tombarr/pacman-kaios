@@ -79,6 +79,7 @@ export class GameState extends State {
   controls: Phaser.CursorKeys;
 
   kaiad: Kaiad;
+  adVisible: boolean;
 
   enterKey: Phaser.Key;
   spaceKey: Phaser.Key;
@@ -179,7 +180,7 @@ export class GameState extends State {
     if (!navigator.onLine) {
       return;
     }
-    
+
     getAd(1) // TODO: remove 1 for publishing
       .then((ad) => {
         this.kaiad = ad;
@@ -192,6 +193,7 @@ export class GameState extends State {
 
   private onAdClose() {
     this.kaiad = null;
+    this.adVisible = false;
     window.setTimeout(this.preloadKaiAds.bind(this), AD_TIMEOUT);
   }
 
@@ -201,6 +203,7 @@ export class GameState extends State {
       this.kaiad.on('click', this.onAdClose.bind(this));
 
       this.kaiad.call('display');
+      this.adVisible = true;
     }
   }
 
@@ -237,20 +240,6 @@ export class GameState extends State {
     if (!this.active) {
       this.ghosts.callAll('stop', undefined);
       this.pacman.stop();
-
-      // Restarts state on win/game over or Pacman death.
-      if ((this.spaceKey && this.spaceKey.isDown) ||
-          (this.enterKey && this.enterKey.isDown)) {
-        // Game over.
-        if (this.lifes === 0) {
-          this.game.state.start('Game', true, false);
-        } else if (this.level <= 3) { // Next level.
-          this.game.state.start('Game', true, false, this.level, this.lifes + 1, this.score);
-        } else {
-          this.game.state.start('Game', true, false); // Win.
-        }
-      }
-
       return;
     }
 
@@ -402,6 +391,34 @@ export class GameState extends State {
     unit.teleport(portal.x, portal.y, x, y);
   }
 
+  private hasPallets(): boolean {
+    return (this.pellets.total > 0);
+  }
+
+  private onLevelComplete(pacman: Pacman) {
+    pacman.sfx.munch.stop();
+    const nextLevel = this.level < 3;
+    const text = nextLevel ? `level ${this.level} completed` : 'game completed';
+    this.level++;
+    this.active = false;
+    this.ghosts.callAll('stop', undefined);
+
+    if (!nextLevel) {
+      this.sfx.win.play();
+    }
+
+    this.showNotification(text);
+  }
+
+  private maybePlaceBonus() {
+    // Bonuses initialization.
+    const eaten = this.pellets.children.length - this.pellets.total;
+
+    if (BONUSES.has(eaten)) {
+      this.placeBonus(BONUSES.get(eaten));
+    }
+  }
+
   /**
    * Munch handler.
    * @param pacman - pacman object.
@@ -416,28 +433,10 @@ export class GameState extends State {
     }
 
     // All items eaten by Pacman.
-    if (!this.pellets.total) {
-      pacman.sfx.munch.stop();
-      const nextLevel = this.level < 3;
-      const text = nextLevel ? `level ${this.level} completed` : 'game completed';
-      this.level++;
-      this.active = false;
-      this.ghosts.callAll('stop', undefined);
-
-      if (!nextLevel) {
-        this.sfx.win.play();
-      }
-
-      this.showNotification(text);
+    if (!this.hasPallets()) {
+      this.onLevelComplete(pacman);
     } else {
-      // Bonuses initialization.
-      const eated = this.pellets.children.length - this.pellets.total;
-
-      const bonusName = BONUSES.get(eated);
-
-      if (bonusName) {
-        this.placeBonus(bonusName);
-      }
+      this.maybePlaceBonus();
     }
   }
 
@@ -487,6 +486,19 @@ export class GameState extends State {
     this.ghosts.callAll('disableSensetiveMode', undefined);
   }
 
+  private onGameOver(pacman: Pacman) {
+    pacman.sfx.munch.stop();
+    this.sfx.over.play();
+    this.active = false;
+    this.showNotification('game over');
+  }
+
+  private onLostLife(pacman: Pacman) {
+    // Minus 1 Pacman life.
+    pacman.die();
+    this.ghosts.callAll('respawn', undefined);
+  }
+
   /**
    * Ghost overlap handler.
    * @param pacman - pacman object.
@@ -509,14 +521,9 @@ export class GameState extends State {
 
       // Game over.
       if (this.lifes === 0) {
-        pacman.sfx.munch.stop();
-        this.sfx.over.play();
-        this.active = false;
-        this.showNotification('game over');
+        this.onGameOver(pacman);
       } else {
-        // Minus 1 Pacman life.
-        pacman.die();
-        this.ghosts.callAll('respawn', undefined);
+        this.onLostLife(pacman);
       }
 
       window.requestAnimationFrame(this.renderKaiAds.bind(this));
@@ -739,6 +746,10 @@ export class GameState extends State {
   }
 
   private onPressCallback(_, e: KeyboardEvent) {
+    if (this.adVisible) {
+      return true;
+    }
+  
     switch (e.key) {
       case 'GoBack':
       case 'Escape':
@@ -751,11 +762,40 @@ export class GameState extends State {
         this.toggleMute();
         e.preventDefault();
         return true;
-      case 'Enter':
-      case 'Space':
-        this.togglePause();
-        e.preventDefault();
+      case 'SoftLeft':
+        this.onLevelComplete(this.pacman);
         return true;
+    }
+  }
+
+  private updateGameState() {
+    // Check if game is active.
+    if (this.active || this.adVisible) {
+      return false;
+    }
+
+    if (this.level <= 3) {
+      // Level up and get another life
+      this.game.state.start('Game', true, false, this.level, this.lifes + 1, this.score);
+    } else {
+      // Game over: win or loss
+      this.game.state.start('Game', true, false);
+    }
+
+    return true;
+  }
+
+  private onEnterPress() {
+    const updatedState = this.updateGameState();
+    if (updatedState || this.adVisible) {
+      return;
+    }
+    
+    // Initial direction
+    if (this.pacman && !this.pacman.hasStarted()) {
+      this.pacman.onControls(Phaser.RIGHT);
+    } else {
+      this.togglePause();
     }
   }
 
@@ -769,8 +809,8 @@ export class GameState extends State {
     this.enterKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
     this.backKey = this.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
     this.backKey.onDown.add(this.onBeforeExit.bind(this));
-    this.enterKey.onDown.add(this.togglePause.bind(this));
-    this.spaceKey.onDown.add(this.togglePause.bind(this));
+    this.enterKey.onDown.add(this.onEnterPress.bind(this));
+    this.spaceKey.onDown.add(this.onEnterPress.bind(this));
   }
 
   /**

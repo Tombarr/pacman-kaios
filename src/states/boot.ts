@@ -5,7 +5,7 @@ import { State } from '../interfaces/state';
  */
 export class BootState extends State {
   preload() {
-    this.game.load.image('logo', 'assets/images/splash.png');
+    this.game.load.image('logo', 'assets/images/splash.png#-moz-samplesize=4');
   }
 
   create() {

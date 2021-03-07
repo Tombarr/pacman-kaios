@@ -10,7 +10,7 @@ export class PreloadState extends State {
     // Sets game logo while loading.
     this.logo = this.game.add.image(this.game.world.centerX, this.game.world.centerY, 'logo');
     this.logo.anchor.set(0.5);
-    this.logo.scale.set(this.game.world.width * 0.8 / 1100); // TODO: keep same size as splash/ logo
+    this.logo.scale.set(this.game.world.width * 0.8 / 892); // TODO: keep same size as splash/ logo
 
     // Tilemap.
     this.load.tilemap('level', 'assets/levels/classic.json', null, Phaser.Tilemap.TILED_JSON);
