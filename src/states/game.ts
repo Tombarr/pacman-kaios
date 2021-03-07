@@ -140,8 +140,8 @@ export class GameState extends State {
     this.createGhosts();
     this.createPacman();
 
-    this.initMute();
     this.initUI();
+    this.initMute();
     this.initSfx();
     this.setDefaultMute();
 
@@ -612,15 +612,21 @@ export class GameState extends State {
 
     this.interface.add(this.scoreBtm);
     this.interface.add(this.notification);
+
     this.updateLifes(0);
   }
 
   private initMute() {
-    this.muteIcon = this.add.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'mute', 1);
-    this.unmuteIcon = this.add.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'unmute', 1);
+    this.muteIcon = this.game.make.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'mute');
+    this.unmuteIcon = this.game.make.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'unmute');
+    this.muteIcon.anchor.set(0.5);
+    this.muteIcon.anchor.set(0.5);
 
     this.muteIcon.alpha = 0;
     this.unmuteIcon.alpha = 0;
+
+    this.interface.add(this.muteIcon);
+    this.interface.add(this.unmuteIcon);
   }
 
   /**
