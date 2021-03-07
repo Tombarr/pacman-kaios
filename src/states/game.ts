@@ -177,7 +177,7 @@ export class GameState extends State {
   }
 
   private preloadKaiAds() {
-    if (!navigator.onLine) {
+    if (!navigator.onLine || this.kaiad) {
       return;
     }
 
@@ -641,12 +641,16 @@ export class GameState extends State {
     // Create if no in UI.
     if (this.lifesArea.length &&
         this.lifesArea.length > this.lifes) {
-      const life = this.lifesArea.pop();
-      const lifeTween = this.game.add.tween(life)
-          .to({ alpha: 0 }, 300, 'Linear');
+      const remove = Math.max(0, this.lifesArea.length - this.lifes);
 
-      lifeTween.onComplete.add(() => life.destroy());
-      lifeTween.start();
+      for (let i = 0; i < remove; i++) {
+        const life = this.lifesArea.pop();
+        const lifeTween = this.game.add.tween(life)
+            .to({ alpha: 0 }, 300, 'Linear');
+
+        lifeTween.onComplete.add(() => life.destroy());
+        lifeTween.start();
+      }
     }  else {
       // Update UI.
       this.lifesArea = [];
@@ -765,6 +769,7 @@ export class GameState extends State {
         e.preventDefault();
         return true;
       case 'SoftLeft':
+        // TODO: remove soft right
         this.onLevelComplete(this.pacman);
         return true;
     }
@@ -776,12 +781,12 @@ export class GameState extends State {
       return false;
     }
 
-    if (this.level <= 3) {
-      // Level up and get another life
-      this.game.state.start('Game', true, false, this.level, this.lifes + 1, this.score);
-    } else {
+    if (this.lifes === 0 || this.level > 3) {
       // Game over: win or loss
       this.game.state.start('Game', true, false);
+    } else if (this.level <= 3) {
+      // Level up and get another life
+      this.game.state.start('Game', true, false, this.level, this.lifes + 1, this.score);
     }
 
     return true;
