@@ -34,30 +34,25 @@ python -m SimpleHTTPServer
 ## Controls
 
 ### Keyboard
-- SPACE - Start next level or restart game after win or game over.
+
+- ENTER - Pause game, start next level, or restart game after win or game over
 - UP - Move up
 - LEFT - Move left
 - DOWN - Move down
 - RIGHT - Move right
-
-### Touch screen
-- TAP - Start next level or restart game after win or game over.
-- SWIPE UP - Move up
-- SWIPE LEFT - Move left
-- SWIPE DOWN - Move down
-- SWIPE RIGHT - Move right
+- SOFTRIGHT - Mute/ Unmute
 
 ## Technologies
+
 - Phaser game engine
 - TypeScript
 - Webpack
-- Service worker with resources caching
 
 ## Features:
+
 - Support desktop & mobile devices
-- Works offline after resource cached
-- Support keyboard & touch controls
+- Works offline as a privileged app
+- Support keyboard
 - 3 levels
 - 8-bit music & sounds
-- Could be added on home screen on Android
 - Made with Love :)

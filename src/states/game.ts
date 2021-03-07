@@ -1,5 +1,3 @@
-import * as Swipe from 'phaser-swipe';
-import { SwipeModel } from '../interfaces/swipe';
 import { State } from '../interfaces/state';
 import { GameDifficulty, SFX } from '../interfaces/game';
 import { GhostName } from '../interfaces/ghost';
@@ -16,7 +14,25 @@ import {
   getTargetPoint
 } from '../utils/tilemap.helpers';
 
+export const BONUSES = new Map<number, string>([
+  [60, 'cherry'],
+  [120, 'strawberry'],
+  [150, 'apple'],
+]);
+
+export const BONUS_AMOUNT = new Map<string, number>([
+  ['cherry', 2],
+  ['strawberry', 3],
+  ['apple', 4],
+]);
+
+export const POINTS = new Map<string, number>([
+  ['pellet', 10],
+  ['pill', 50],
+]);
+
 export const PUBLISHER_ID = 'ed847862-2f6a-441e-855e-7e405549cf48'; // KaiAds
+export const AD_TIMEOUT = 45 * 1000; // 45s
 
 export function getAd(test: Number = 0): Promise<Kaiad|null> {
   return new Promise((resolve, reject) => {
@@ -71,9 +87,6 @@ export class GameState extends State {
   muteIcon: Phaser.Sprite;
   unmuteIcon: Phaser.Sprite;
 
-  swipe: Swipe;
-  isTouch: boolean;
-
   sfx: SFX;
 
   screenLock: MozWakeLock;
@@ -93,7 +106,6 @@ export class GameState extends State {
   }
 
   init(level = 1, lifes = 3, score = 0) {
-    this.isTouch = this.game.device.touch;
     this.level = level;
     this.lifes = lifes;
     this.score = score;
@@ -151,15 +163,27 @@ export class GameState extends State {
     this.requestWakeLock();
 
     this.sfx.intro.play();
+    this.showNotification('ready!');
 
     // Preload KaiAds
     window.requestAnimationFrame(this.preloadKaiAds.bind(this));
   }
 
+  private onAdPreloaded() {
+    if (this.pacman && !this.pacman.hasStarted()) {
+      window.requestAnimationFrame(this.renderKaiAds.bind(this));
+    }
+  }
+
   private preloadKaiAds() {
+    if (!navigator.onLine) {
+      return;
+    }
+    
     getAd(1) // TODO: remove 1 for publishing
       .then((ad) => {
         this.kaiad = ad;
+        this.onAdPreloaded();
       })
       .catch((e) => {
         console.warn(e);
@@ -168,6 +192,7 @@ export class GameState extends State {
 
   private onAdClose() {
     this.kaiad = null;
+    window.setTimeout(this.preloadKaiAds.bind(this), AD_TIMEOUT);
   }
 
   private renderKaiAds() {
@@ -259,11 +284,7 @@ export class GameState extends State {
    * Update controls handler.
    */
   checkControls() {
-    if (this.isTouch) {
-      this.swipeControls();
-    } else {
-      this.keyboardControls();
-    }
+    this.keyboardControls();
 
     if (this.pacman.turning !== Phaser.NONE) {
       this.pacman.turn();
@@ -284,36 +305,6 @@ export class GameState extends State {
       this.pacman.onControls(Phaser.DOWN);
     } else {
       this.pacman.turning = Phaser.NONE;
-    }
-  }
-
-  /**
-   * Touch handler.
-   */
-  swipeControls() {
-    const direction = this.swipe.check();
-
-    if (direction !== null) {
-      switch (direction.direction) {
-        case this.swipe.DIRECTION_LEFT:
-          this.pacman.onControls(Phaser.LEFT);
-          break;
-
-        case this.swipe.DIRECTION_RIGHT:
-          this.pacman.onControls(Phaser.RIGHT);
-          break;
-        case this.swipe.DIRECTION_UP:
-          this.pacman.onControls(Phaser.UP);
-          break;
-
-        case this.swipe.DIRECTION_DOWN:
-          this.pacman.onControls(Phaser.DOWN);
-          break;
-
-        default:
-          this.pacman.turning = Phaser.NONE;
-          break;
-      }
     }
   }
 
@@ -395,6 +386,7 @@ export class GameState extends State {
     this.pinky.escapeFromHome(800);
     this.inky.escapeFromHome(1000);
     this.clyde.escapeFromHome(1200);
+    this.hideNotification();
   }
 
   /**
@@ -416,10 +408,7 @@ export class GameState extends State {
    * @param item - pill or pellet to collect.
    */
   collect(pacman: Pacman, item) {
-    const points = {
-      pellet: 10,
-      pill: 50
-    }[item.key] || 0;
+    const points = POINTS.get(item.key) || 0;
 
     if (points) {
       item.kill();
@@ -440,14 +429,11 @@ export class GameState extends State {
       }
 
       this.showNotification(text);
-    } else { // Bonuses initialization.
-      const eated = `${this.pellets.children.length - this.pellets.total}`;
+    } else {
+      // Bonuses initialization.
+      const eated = this.pellets.children.length - this.pellets.total;
 
-      const bonusName = {
-        '60': 'cherry',
-        '120': 'strawberry',
-        '150': 'apple'
-      }[eated];
+      const bonusName = BONUSES.get(eated);
 
       if (bonusName) {
         this.placeBonus(bonusName);
@@ -457,15 +443,10 @@ export class GameState extends State {
 
   /**
    * Bonus eat handler.
-   * @param pacman - pacman object.
    * @param bonus - friut.
    */
-  bonus(pacman: Pacman, bonus) {
-    const amount = {
-      'cherry': 2,
-      'strawberry': 3,
-      'apple': 4
-    }[bonus.key] || 1;
+  bonus(_: Pacman, bonus) {
+    const amount = BONUS_AMOUNT.get(bonus.key) || 1;
 
     bonus.destroy();
     this.sfx.fruit.play();
@@ -532,12 +513,13 @@ export class GameState extends State {
         this.sfx.over.play();
         this.active = false;
         this.showNotification('game over');
-        this.renderKaiAds();
       } else {
         // Minus 1 Pacman life.
         pacman.die();
         this.ghosts.callAll('respawn', undefined);
       }
+
+      window.requestAnimationFrame(this.renderKaiAds.bind(this));
     }
   }
 
@@ -564,7 +546,7 @@ export class GameState extends State {
    * Puts fruit on map.
    * @param name - fruit name.
    */
-  private placeBonus(name: 'string') {
+  private placeBonus(name: string) {
     const rndPoint = this.getRandomPelletPosition();
     this.add.sprite(rndPoint.x, rndPoint.y, name, 0, this.bonuses);
   }
@@ -602,7 +584,7 @@ export class GameState extends State {
     this.scoreBtm.anchor.set(0.5);
     this.notification = this.game.make.bitmapText(
       this.game.world.centerX,
-      this.game.world.centerY + 48, 'kong', '', 16);
+      this.game.world.centerY + 40, 'kong', '', 16);
     this.notification.anchor.set(0.5);
     this.notification.alpha = 0;
     this.notificationIn = this.game.add.tween(this.notification)
@@ -617,10 +599,13 @@ export class GameState extends State {
   }
 
   private initMute() {
-    this.muteIcon = this.game.make.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'mute');
-    this.unmuteIcon = this.game.make.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'unmute');
+    this.muteIcon = this.game.make.sprite(this.game.world.right - 20, this.game.world.bottom - 10, 'mute');
+    this.unmuteIcon = this.game.make.sprite(this.game.world.right - 20, this.game.world.bottom - 10, 'unmute');
+    
     this.muteIcon.anchor.set(0.5);
-    this.muteIcon.anchor.set(0.5);
+    this.unmuteIcon.anchor.set(0.5);
+    this.muteIcon.scale.setTo(1.5);
+    this.unmuteIcon.scale.setTo(1.5);
 
     this.muteIcon.alpha = 0;
     this.unmuteIcon.alpha = 0;
@@ -730,6 +715,7 @@ export class GameState extends State {
   private toggleMute() {
     this.game.sound.mute = !this.game.sound.mute;
     localStorage.setItem('mute', ((this.game.sound.mute) ? '1' : '0'));
+    this.setMuteIcon(this.game.sound.mute);
   }
 
   private onBeforeExit() {
@@ -777,7 +763,6 @@ export class GameState extends State {
    * Set game controls.
    */
   private setControls() {
-    this.swipe = new Swipe(this.game, SwipeModel);
     this.input.keyboard.onPressCallback = this.onPressCallback.bind(this);
     this.controls = this.input.keyboard.createCursorKeys();
     this.spaceKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)

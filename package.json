@@ -21,8 +21,7 @@
   },
   "homepage": "https://github.com/Tombarr/pacman-kaios",
   "dependencies": {
-    "phaser": "^2.6.2",
-    "phaser-swipe": "^1.0.4"
+    "phaser": "^2.6.2"
   },
   "devDependencies": {
     "@types/node": "^12.7.12",

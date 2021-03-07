@@ -129,6 +129,10 @@ export class Pacman extends TurningObject {
     this.started = false;
   }
 
+  hasStarted(): boolean {
+    return this.started;
+  }
+
   /**
    * Inits object animations.
    */
