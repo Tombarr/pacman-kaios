@@ -196,6 +196,7 @@ export class GameState extends State {
   private onAdClose() {
     this.kaiad = null;
     this.adVisible = false;
+    window.requestAnimationFrame(this.minimizeMemoryUsage.bind(this));
     window.setTimeout(this.preloadKaiAds.bind(this), AD_TIMEOUT);
   }
 
