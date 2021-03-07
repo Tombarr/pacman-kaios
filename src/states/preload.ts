@@ -27,6 +27,8 @@ export class PreloadState extends State {
     this.load.spritesheet('pinky', 'assets/sprites/pinky.png', this.game.tileSize, this.game.tileSize);
     this.load.spritesheet('clyde', 'assets/sprites/clyde.png', this.game.tileSize, this.game.tileSize);
     this.load.spritesheet('pacman', 'assets/sprites/pacman.png', this.game.tileSize, this.game.tileSize);
+    this.load.image('mute', 'assets/sprites/mute.png');
+    this.load.image('unmute', 'assets/sprites/unmute.png');
 
     // Font.
     this.load.bitmapFont('kong', 'assets/font/kongtext.png', 'assets/font/kongtext.xml');

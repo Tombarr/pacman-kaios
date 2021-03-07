@@ -68,6 +68,9 @@ export class GameState extends State {
   spaceKey: Phaser.Key;
   backKey: Phaser.Key;
 
+  muteIcon: Phaser.Sprite;
+  unmuteIcon: Phaser.Sprite;
+
   swipe: Swipe;
   isTouch: boolean;
 
@@ -137,6 +140,7 @@ export class GameState extends State {
     this.createGhosts();
     this.createPacman();
 
+    this.initMute();
     this.initUI();
     this.initSfx();
     this.setDefaultMute();
@@ -175,19 +179,32 @@ export class GameState extends State {
     }
   }
 
+  private setMuteIcon(mute: boolean) {
+    if (mute) {
+      this.unmuteIcon.alpha = 0;
+      this.muteIcon.alpha = 1;
+    } else {
+      this.muteIcon.alpha = 0;
+      this.unmuteIcon.alpha = 1;
+    }
+  }
+
   setDefaultMute() {
     const mute = Boolean((localStorage.getItem('mute') || '1') === '1');
     this.game.sound.mute = mute;
+    this.setMuteIcon(mute);
   }
 
   mute() {
     localStorage.setItem('mute', '1');
     this.game.sound.mute = true;
+    this.setMuteIcon(true);
   }
 
   unmute() {
     localStorage.setItem('mute', '0');
     this.game.sound.mute = false;
+    this.setMuteIcon(false);
   }
 
   update() {
@@ -598,6 +615,14 @@ export class GameState extends State {
     this.updateLifes(0);
   }
 
+  private initMute() {
+    this.muteIcon = this.add.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'mute', 1);
+    this.unmuteIcon = this.add.sprite(this.game.world.right - 16, this.game.world.bottom - 10, 'unmute', 1);
+
+    this.muteIcon.alpha = 0;
+    this.unmuteIcon.alpha = 0;
+  }
+
   /**
    * Updates player scores.
    * @param points - points to add.
@@ -646,17 +671,27 @@ export class GameState extends State {
    * Shows game notification.
    * @param text - notification text.
    */
-  private showNotification(text: string) {
+  private showNotification(text: string, instant: boolean = false) {
     this.notification.text = text.toUpperCase();
-    this.notificationIn.start();
+
+    if (instant) {
+      this.notification.alpha = 1;
+    } else {
+      this.notificationIn.start();
+    }
   }
 
   /**
    * Hides game notification.
    */
-  private hideNotification() {
+  private hideNotification(instant: boolean = false) {
     this.notification.text = '';
-    this.notificationOut.start();
+
+    if (instant) {
+      this.notification.alpha = 0;
+    } else {
+      this.notificationOut.start();
+    }
   }
 
   /**
@@ -674,13 +709,16 @@ export class GameState extends State {
   }
 
   private togglePause() {
-    this.game.paused = !this.game.paused;
+    const willPause = !this.game.paused;
 
-    if (this.game.paused) {
-      this.showNotification('paused');
+    if (willPause) {
+      this.showNotification('paused', true);
     } else {
-      this.hideNotification();
+      this.hideNotification(true);
     }
+
+    // Needs to happen after pausing game
+    this.game.paused = willPause;
   }
 
   private toggleMute() {

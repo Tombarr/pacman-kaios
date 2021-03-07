@@ -2,7 +2,8 @@
   "name": "Pak-Man",
   "version": "1.0.0",
   "launch_path": "/index.html",
-  "description": "The classic arcade game Pac-Man for KaiOS",
+  "subtitle": "The classic arcade game Pac-Man, made for KaiOS",
+  "description": "The classic arcade game Pac-Man, made for KaiOS",
   "type": "privileged",
   "icons": {
     "128": "/assets/images/launcher-icon-2x.png"
@@ -24,9 +25,9 @@
   },
   "locales": {
     "en-US": {
-      "name": "Pac-Man",
-      "subtitle": "Pac-Man for KaiOS",
-      "description": "Pac-Man for KaiOS"
+      "name": "Pak-Man",
+      "subtitle": "The classic arcade game Pac-Man, made for KaiOS",
+      "description": "The classic arcade game Pac-Man, made for KaiOS"
     }
   },
   "default_locale": "en-US",
