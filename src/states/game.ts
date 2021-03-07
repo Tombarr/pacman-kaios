@@ -594,6 +594,7 @@ export class GameState extends State {
       this.game.world.centerY + 40, 'kong', '', 16);
     this.notification.anchor.set(0.5);
     this.notification.alpha = 0;
+
     this.notificationIn = this.game.add.tween(this.notification)
       .to({ alpha: 1 }, 300, 'Linear');
     this.notificationOut = this.game.add.tween(this.notification)
@@ -648,6 +649,7 @@ export class GameState extends State {
       lifeTween.start();
     }  else {
       // Update UI.
+      this.lifesArea = [];
       let sprite: Phaser.Sprite;
       let prevSprite: Phaser.Sprite;
 
