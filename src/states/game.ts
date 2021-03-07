@@ -31,6 +31,8 @@ export const POINTS = new Map<string, number>([
   ['pill', 50],
 ]);
 
+const FINAL_LEVEL = 3; // 3 Levels
+
 export const PUBLISHER_ID = 'ed847862-2f6a-441e-855e-7e405549cf48'; // KaiAds
 export const AD_TIMEOUT = 45 * 1000; // 45s
 
@@ -107,9 +109,9 @@ export class GameState extends State {
   }
 
   init(level = 1, lifes = 3, score = 0) {
-    this.level = level;
-    this.lifes = lifes;
-    this.score = score;
+    this.level = Math.min(FINAL_LEVEL, Math.max(1, level));
+    this.lifes = Math.max(1, lifes);
+    this.score = Math.max(0, score);
     this.difficlty = difficulty[this.level - 1];
     this.multi = this.difficlty.multiplier;
     this.active = true;
@@ -397,7 +399,7 @@ export class GameState extends State {
 
   private onLevelComplete(pacman: Pacman) {
     pacman.sfx.munch.stop();
-    const nextLevel = this.level < 3;
+    const nextLevel = this.level < FINAL_LEVEL;
     const text = nextLevel ? `level ${this.level} completed` : 'game completed';
     this.level++;
     this.active = false;
@@ -781,10 +783,10 @@ export class GameState extends State {
       return false;
     }
 
-    if (this.lifes === 0 || this.level > 3) {
+    if (this.lifes === 0 || this.level > FINAL_LEVEL) {
       // Game over: win or loss
       this.game.state.start('Game', true, false);
-    } else if (this.level <= 3) {
+    } else {
       // Level up and get another life
       this.game.state.start('Game', true, false, this.level, this.lifes + 1, this.score);
     }
