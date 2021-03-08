@@ -1,8 +1,23 @@
-# Pac-Man KaiOS
+# Pak-Man KaiOS
 
-Pac-Man game built for KaiOS, forked from [Pacman PWA](https://github.com/vitaliy-bobrov/pacman-pwa).
+Pac-Man game built for [KaiOS](https://www.kaiostech.com/) smart feature phones, forked from [Pacman PWA](https://github.com/vitaliy-bobrov/pacman-pwa).
 
-🎮 [Play Game](https://vitaliy-bobrov.github.io/pacman-pwa/)
+🎮 [Play PWA](https://vitaliy-bobrov.github.io/pacman-pwa/)
+
+Pak-Man is integrated with KaiAds (per the KaiStore Distribution Agreement) and optimized for 240x230 screens.
+
+Ready!  | Level 1 Completed | Homescreen
+------ | ------|----------
+![Pak-Man](./pacman-ready.png) | ![Level 1 Completed](./pacman-level-complete.png) | ![Pak-Man Homescreen](./pacman-icon.png) 
+
+### Icons 
+
+![Pak-Man Icon 112px](./src/PakMan_112.png)
+![Pak-Man Icon 56px](./src/PakMan_56.png)
+
+### Banner
+
+![Pak-Man Marketing Banner](./PakMan_Banner.png)
 
 ## Install & run:
 

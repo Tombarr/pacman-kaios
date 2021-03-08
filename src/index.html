@@ -1,5 +1,5 @@
 <html lang="en">
-<head>
+<head dir="ltr">
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="description" content="Pac-Man for KaiOS" />
@@ -11,7 +11,6 @@
   <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
 
   <link rel="manifest" href="./manifest.webapp" type="application/x-web-app-manifest+json" />
-  <link rel="manifest" href="./manifest.webmanifest" type="application/manifest+json" />
 
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -25,5 +24,15 @@
 </head>
 <body role="application">
   <section id="root"></section>
+  <section id="app-interstitial" role="button" aria-hidden="true" hidden>
+    <section class="interstitial-image">
+      <img src="/assets/images/podlp.png" alt="Download PodLP on the KaiStore"
+        width="240" height="264" draggable="false" decoding="async" loading="lazy" />
+    </section>
+    <section class="soft-keys">
+      <button class="soft-key-left" data-key="SoftLeft" data-action="dismiss" role="button">Dismiss</button>
+      <button class="soft-key-right" data-key="SoftRight" data-action="go" role="button">Go</button>
+    </section>
+  </section>
 </body>
 </html>

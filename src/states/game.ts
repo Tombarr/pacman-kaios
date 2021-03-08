@@ -8,6 +8,7 @@ import { Pacman } from '../objects/pacman';
 import { Ghost } from '../objects/ghost';
 import { MozWakeLock } from '../utils/mozwakelock';
 import { Kaiad } from '../utils/kaiad';
+import { isUpdateAvailable, goToStore, openAppPromise } from '../utils/update';
 import {
   getObjectsByType,
   getRespawnPoint,
@@ -35,6 +36,10 @@ const FINAL_LEVEL = 3; // 3 Levels
 
 export const PUBLISHER_ID = 'ed847862-2f6a-441e-855e-7e405549cf48'; // KaiAds
 export const AD_TIMEOUT = 45 * 1000; // 45s
+
+// Manifest URL to launch KaiStore for PodLP
+export const INTERSTITIAL_MANIFEST_URL = 'https://api.kaiostech.com/apps/manifest/UxappJMyyWGDpPORzsyl';
+const INTERSTITIAL_RATE = 0.5; // 50%
 
 export function getAd(test: Number = 0): Promise<Kaiad|null> {
   return new Promise((resolve, reject) => {
@@ -93,6 +98,7 @@ export class GameState extends State {
   sfx: SFX;
 
   screenLock: MozWakeLock;
+  interstitial: HTMLElement;
 
   private interface: Phaser.Group;
   private lifesArea: Phaser.Sprite[] = [];
@@ -160,16 +166,60 @@ export class GameState extends State {
     this.initSfx();
     this.setDefaultMute();
 
-    // KaiOS-specific
-    this.minimizeMemoryUsage();
-    this.setAudioChannel('content');
-    this.requestWakeLock();
-
-    this.sfx.intro.play();
     this.showNotification('ready!');
 
+    // KaiOS-specific
+    this.bindAppInterstitial();
+    this.requestWakeLock();
+    this.minimizeMemoryUsage();
+
+    // Audio content
+    this.setAudioChannel('content');
+    this.sfx.intro.play();
+
     // Preload KaiAds
+    window.requestAnimationFrame(this.checkForUpdates.bind(this));
     window.requestAnimationFrame(this.preloadKaiAds.bind(this));
+  }
+
+  private isInterstitialVisible(): boolean {
+    return !this.interstitial.hasAttribute('hidden');
+  }
+
+  private setInterstitialVisibility(visible: boolean) {
+    if (visible) {
+      this.interstitial.removeAttribute('aria-hidden');
+      this.interstitial.removeAttribute('hidden');
+    } else {
+      this.interstitial.setAttribute('aria-hidden', 'true');
+      this.interstitial.setAttribute('hidden', 'true');
+    }
+  }
+
+  private onInterstitialSoftKeyClick(key: string): boolean {
+    switch (key) {
+      case 'SoftLeft':
+        this.setInterstitialVisibility(false);
+        return true;
+      case 'Enter':
+      case 'SoftRight':
+        this.setInterstitialVisibility(false);
+        openAppPromise(INTERSTITIAL_MANIFEST_URL)
+          .catch((e) => console.warn(e));
+        return true;
+    }
+
+    return false;
+  }
+
+  private bindAppInterstitial() {
+    this.interstitial = document.getElementById('app-interstitial');
+    const softKeys: NodeListOf<HTMLElement> = this.interstitial.querySelectorAll('.soft-keys > [data-action]');
+    for (let i = 0, e = softKeys.length; i < e; i++) {
+      const button: HTMLElement = softKeys[i];
+      const key = button.dataset.key;
+      button.addEventListener('click', () => this.onInterstitialSoftKeyClick(key))
+    }
   }
 
   private onAdPreloaded() {
@@ -179,11 +229,15 @@ export class GameState extends State {
   }
 
   private preloadKaiAds() {
-    if (!navigator.onLine || this.kaiad) {
+    const offline = !navigator.onLine;
+    if (offline || this.kaiad) {
+      if (offline) {
+        this.onAdPreloaded();
+      }
       return;
     }
 
-    getAd(1) // TODO: remove 1 for publishing
+    getAd()
       .then((ad) => {
         this.kaiad = ad;
         this.onAdPreloaded();
@@ -201,7 +255,16 @@ export class GameState extends State {
   }
 
   private renderKaiAds() {
-    if (this.kaiad) {
+    // Don't render more than one ad at a time
+    if (this.adVisible || this.isInterstitialVisible()) {
+      return;
+    }
+
+    const renderInterstitial = (Math.random() > INTERSTITIAL_RATE);
+
+    if (renderInterstitial) {
+      this.setInterstitialVisibility(true);
+    } else if (this.kaiad) {
       this.kaiad.on('close', this.onAdClose.bind(this));
       this.kaiad.on('click', this.onAdClose.bind(this));
 
@@ -270,6 +333,24 @@ export class GameState extends State {
     this.pacman.updatePosition(this.map, this.wallsLayer.index);
 
     this.checkControls();
+  }
+
+  private showUpdatePrompt() {
+    const c = confirm('An update is available, install from the store now?');
+    if (c) {
+      goToStore()
+        .catch((e) => console.warn(e));
+    }
+  }
+
+  private checkForUpdates() {
+    isUpdateAvailable()
+      .then((downloadAvailable) => {
+        if (downloadAvailable) {
+          this.showUpdatePrompt();
+        }
+      })
+      .catch((e) => console.warn(e));
   }
 
   /**
@@ -532,7 +613,7 @@ export class GameState extends State {
         this.onLostLife(pacman);
       }
 
-      window.requestAnimationFrame(this.renderKaiAds.bind(this));
+      window.setTimeout(this.renderKaiAds.bind(this), 500);
     }
   }
 
@@ -749,6 +830,15 @@ export class GameState extends State {
     if (this.adVisible) {
       return true;
     }
+
+    // Pass through to interstitial
+    if (this.isInterstitialVisible()) {
+      const responded = this.onInterstitialSoftKeyClick(e.key);
+      if (responded) {
+        e.preventDefault();
+        return true;
+      }
+    }
   
     switch (e.key) {
       case 'GoBack':
@@ -762,16 +852,12 @@ export class GameState extends State {
         this.toggleMute();
         e.preventDefault();
         return true;
-      case 'SoftLeft':
-        // TODO: remove soft right
-        this.onLevelComplete(this.pacman);
-        return true;
     }
   }
 
   private updateGameState() {
     // Check if game is active.
-    if (this.active || this.adVisible) {
+    if (this.active || this.adVisible || this.isInterstitialVisible()) {
       return false;
     }
 
@@ -790,6 +876,14 @@ export class GameState extends State {
     const updatedState = this.updateGameState();
     if (updatedState || this.adVisible) {
       return;
+    }
+
+    // Pass through to interstitial
+    if (this.isInterstitialVisible()) {
+      const responded = this.onInterstitialSoftKeyClick('Enter');
+      if (responded) {
+        return true;
+      }
     }
     
     // Initial direction

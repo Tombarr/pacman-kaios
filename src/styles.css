@@ -8,12 +8,37 @@ body,
     padding: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    -moz-text-size-adjust: 99%;
+    text-size-adjust: 99%;
+    font-variant-ligatures: common-ligatures discretionary-ligatures historical-ligatures;
+    text-rendering: optimizeLegibility;
+    text-decoration-skip-ink: all;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Open Sans'), local('OpenSans');
 }
 
 body {
     width: 100%;
     width: 100vw;
     background-color: rgb(0, 0, 0);
+    font-family: 'Open Sans', sans-serif;
+    box-sizing: border-box;
+    font-style: normal;
+}
+
+img {
+    max-width: 100%;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 #root {
@@ -42,10 +67,6 @@ body {
     overflow: hidden;
 }
 
-[hidden], [aria-hidden="true"] {
-    display: none;
-}
-
 frame, iframe {
     border: none;
     outline: none;
@@ -54,4 +75,85 @@ frame, iframe {
 
 canvas {
     width: auto;
+}
+
+#app-interstitial {
+    background-color: #000;
+    position: absolute;
+    z-index: 1000;
+    top: 24px;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    height: 100%;
+    height: 100vh;
+    height: calc(100vh - 24px);
+    width: 100%;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    justify-items: center;
+}
+
+#app-interstitial > .interstitial-image {
+    height: 264px;
+    width: 240px;
+    margin: auto;
+}
+
+#app-interstitial > .soft-keys {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    width: 100%;
+    height: 30px;
+    min-height: 30px;
+    line-height: 100%;
+    background-color: #CCC;
+    color: #282828;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#app-interstitial > .soft-keys > button {
+    -webkit-user-drag: none;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    font-size: 0.95em;
+    font-weight: 600;
+    width: auto;
+    flex: 1;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#app-interstitial > .soft-keys > button:first-of-type {
+    text-align: left;
+    text-align: start;
+    padding-inline-start: 0.5rem;
+    text-transform: capitalize;
+}
+
+#app-interstitial > .soft-keys > button:last-of-type {
+    text-align: right;
+    text-align: end;
+    padding-inline-end: 0.5rem;
+    text-transform: capitalize;
+}
+
+[hidden], [aria-hidden="true"] {
+    display: none !important;
+    visibility: hidden;
+    opacity: 0;
 }

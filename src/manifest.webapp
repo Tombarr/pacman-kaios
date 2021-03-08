@@ -2,11 +2,12 @@
   "name": "Pak-Man",
   "version": "1.0.0",
   "launch_path": "/index.html",
-  "subtitle": "The classic arcade game Pac-Man, made for KaiOS",
-  "description": "The classic arcade game Pac-Man, made for KaiOS",
+  "subtitle": "The classic arcade game Pac-Man on KaiOS",
+  "description": "Play the classic game Pak-Man anytime, anywhere. Pak-Man is designed for KaiOS and based on Pac-Man (Japanese: パックマン), the 1980 classic arcade game. Pak-Man is not affiliated with nor endorsed by Bandai Namco Entertainment.",
   "type": "privileged",
   "icons": {
-    "128": "/assets/images/launcher-icon-2x.png"
+    "56": "/PakMan_56.png",
+    "112": "/PakMan_112.png"
   },
   "fullscreen": "true",
   "developer": {
@@ -26,8 +27,8 @@
   "locales": {
     "en-US": {
       "name": "Pak-Man",
-      "subtitle": "The classic arcade game Pac-Man, made for KaiOS",
-      "description": "The classic arcade game Pac-Man, made for KaiOS"
+      "subtitle": "The classic arcade game Pac-Man on KaiOS",
+      "description": "Play the classic game Pak-Man anytime, anywhere. Pak-Man is designed for KaiOS and based on Pac-Man (Japanese: パックマン), the 1980 classic arcade game. Pak-Man is not affiliated with nor endorsed by Bandai Namco Entertainment."
     }
   },
   "default_locale": "en-US",

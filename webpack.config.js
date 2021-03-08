@@ -95,7 +95,7 @@ module.exports = {
         to: path.join(__dirname, 'dist/assets/')
       },
       {
-        from: path.join(__dirname, 'src/*.{json,js,ico,png,svg,xml,webapp,css}'),
+        from: path.join(__dirname, 'src/*.{js,ico,png,svg,xml,webapp,css}'),
         to: path.join(__dirname, 'dist/')
       }
     ]),
