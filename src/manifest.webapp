@@ -10,11 +10,12 @@
   },
   "fullscreen": "true",
   "developer": {
-    "name": "Game Dev",
+    "name": "Last Byte LLC",
     "url": "https://github.com/Tombarr"
   },
   "categories": [
-    "games"
+    "games",
+    "entertainment"
   ],
   "installs_allowed_from": [
     "*"

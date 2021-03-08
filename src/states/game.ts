@@ -405,6 +405,7 @@ export class GameState extends State {
     this.level++;
     this.active = false;
     this.ghosts.callAll('stop', undefined);
+    pacman.stop();
 
     if (!nextLevel) {
       this.sfx.win.play();
@@ -491,6 +492,8 @@ export class GameState extends State {
 
   private onGameOver(pacman: Pacman) {
     pacman.sfx.munch.stop();
+    pacman.stop();
+    this.ghosts.callAll('stop', undefined);
     this.sfx.over.play();
     this.active = false;
     this.showNotification('game over');
@@ -610,8 +613,10 @@ export class GameState extends State {
   }
 
   private initMute() {
-    this.muteIcon = this.game.make.sprite(this.game.world.right - 20, this.game.world.bottom - 10, 'mute');
-    this.unmuteIcon = this.game.make.sprite(this.game.world.right - 20, this.game.world.bottom - 10, 'unmute');
+    this.muteIcon = this.game.make
+      .sprite(this.game.world.right - 20, this.game.world.bottom - 10, 'mute');
+    this.unmuteIcon = this.game.make
+      .sprite(this.game.world.right - 20, this.game.world.bottom - 10, 'unmute');
     
     this.muteIcon.anchor.set(0.5);
     this.unmuteIcon.anchor.set(0.5);
@@ -638,39 +643,25 @@ export class GameState extends State {
    * Updates player lifes.
    * @param amount - number of lifes.
    */
-  private updateLifes(amount: number) {
+  private updateLifes(amount: number = 0) {
     this.lifes += amount;
 
-    // Create if no in UI.
-    if (this.lifesArea.length &&
-        this.lifesArea.length > this.lifes) {
-      const remove = Math.max(0, this.lifesArea.length - this.lifes);
+    this.lifesArea.map((life) => life.destroy());
+    this.lifesArea = [];
 
-      for (let i = 0; i < remove; i++) {
-        const life = this.lifesArea.pop();
-        const lifeTween = this.game.add.tween(life)
-            .to({ alpha: 0 }, 300, 'Linear');
-
-        lifeTween.onComplete.add(() => life.destroy());
-        lifeTween.start();
-      }
-    }  else {
-      // Update UI.
-      this.lifesArea = [];
+    // Add lifes
+    for (let i = 0; i < this.lifes; i++) {
       let sprite: Phaser.Sprite;
-      let prevSprite: Phaser.Sprite;
-
-      for (let i = 0; i < this.lifes; i++) {
-        if (prevSprite) {
-          sprite = this.add.sprite(0, 0, 'pacman', 1)
-            .alignTo(prevSprite, Phaser.RIGHT_CENTER, 8, 0);
-        } else {
-          sprite = this.add.sprite(8, this.game.world.bottom - 16, 'pacman', 1);
-        }
-
-        this.lifesArea.push(sprite);
-        prevSprite = sprite;
+      const prevSprite = this.lifesArea[this.lifesArea.length - 1];
+      
+      if (prevSprite) {
+        sprite = this.add.sprite(0, 0, 'pacman', 1)
+          .alignTo(prevSprite, Phaser.RIGHT_CENTER, 8, 0);
+      } else {
+        sprite = this.add.sprite(8, this.game.world.bottom - 16, 'pacman', 1);
       }
+
+      this.lifesArea.push(sprite);
     }
   }
 
