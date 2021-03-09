@@ -12,6 +12,8 @@ export class BootState extends State {
     this.setScale();
 
     Phaser.Canvas.setImageRenderingCrisp(this.game.canvas);
+    Phaser.Canvas.setUserSelect(this.game.canvas, 'none');
+    Phaser.Canvas.setBackgroundColor(this.game.canvas, 'rgb(0, 0, 0)');
 
     this.game.state.start('Preload');
   }

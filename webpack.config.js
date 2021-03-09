@@ -3,9 +3,8 @@ require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
 const IS_PROD = process.env.NODE_ENV === 'production';
 
@@ -35,7 +34,12 @@ function exposeRules(modulePath, name) {
   return {
     test: (path) => modulePath === path,
     loader: 'expose-loader',
-    options: name
+    options: {
+      exposes: {
+        globalName: name,
+        override: true,
+      },
+    },
   };
 }
 
@@ -72,18 +76,24 @@ module.exports = {
     ]
   },
   optimization: {
+    minimize: IS_PROD,
     minimizer: [
-      new UglifyJsPlugin({
-        uglifyOptions: {
-          output: {
-            comments: !IS_PROD
-          },
-          mangle: IS_PROD,
-          warnings: !IS_PROD,
+      new TerserPlugin({
+        terserOptions: {
+          ecma: 2016,
           compress: {
-            drop_console: IS_PROD
+            booleans_as_integers: true,
+            drop_console: true,
+            passes: 2,
           },
-        }
+          mangle: true,
+          module: false,
+          toplevel: false,
+          ie8: false,
+          keep_classnames: false,
+          keep_fnames: false,
+          safari10: false,
+        },
       })
     ]
   },
@@ -103,9 +113,6 @@ module.exports = {
       title: 'Pacman PWA',
       inject: 'head',
       template: 'index.html'
-    }),
-    new ScriptExtHtmlWebpackPlugin({
-      defaultAttribute: 'defer',
     }),
     ...PLUGINS
   ],

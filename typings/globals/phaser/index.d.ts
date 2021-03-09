@@ -11641,7 +11641,6 @@ declare module Phaser {
     }
 
     interface IGameConfig {
-
         enableDebug?: boolean;
         width?: number;
         height?: number;
@@ -11655,7 +11654,9 @@ declare module Phaser {
         seed?: string;
         state?: Phaser.State;
         forceSetTimeOut: boolean;
-
+        roundPixels?: boolean;
+        powerPreference?: string;
+        touch?: boolean;
     }
 
 

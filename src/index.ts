@@ -38,14 +38,18 @@ export class PacmanGame extends Phaser.Game {
     const config: Phaser.IGameConfig = {
       width: 448,
       height: 576,
-      renderer: Phaser.AUTO,
+      renderer: Phaser.WEBGL,
       parent: 'root',
       antialias: false, // Used to keep pixelated graphics.
       transparent: false,
       resolution: 1,
-      forceSetTimeOut: false
+      forceSetTimeOut: false,
+      preserveDrawingBuffer: true,
+      enableDebug: false,
+      touch: false,
     };
 
-    new PacmanGame(config);
+    const pacmanGame = new PacmanGame(config);
+    pacmanGame.clearBeforeRender = false;
   };
 })();

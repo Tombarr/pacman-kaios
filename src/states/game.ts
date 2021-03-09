@@ -33,6 +33,7 @@ export const POINTS = new Map<string, number>([
 ]);
 
 const FINAL_LEVEL = 3; // 3 Levels
+const DEFAULT_MUTE = '0';
 
 export const PUBLISHER_ID = 'ed847862-2f6a-441e-855e-7e405549cf48'; // KaiAds
 export const AD_TIMEOUT = 45 * 1000; // 45s
@@ -98,6 +99,7 @@ export class GameState extends State {
   sfx: SFX;
 
   screenLock: MozWakeLock;
+  cpuLock: MozWakeLock;
   interstitial: HTMLElement;
 
   private interface: Phaser.Group;
@@ -135,6 +137,7 @@ export class GameState extends State {
     try {
       if (!this.screenLock && typeof window.navigator['requestWakeLock'] === 'function') {
         this.screenLock = window.navigator['requestWakeLock']('screen');
+        this.cpuLock = window.navigator['requestWakeLock']('cpu');
       }
     } catch (_) { }
   }
@@ -144,6 +147,11 @@ export class GameState extends State {
       if (this.screenLock && typeof this.screenLock['unlock'] === 'function') {
         this.screenLock.unlock();
         this.screenLock = null;
+      }
+
+      if (this.cpuLock && typeof this.cpuLock['unlock'] === 'function') {
+        this.cpuLock.unlock();
+        this.cpuLock = null;
       }
     } catch (_) { }
   }
@@ -179,7 +187,6 @@ export class GameState extends State {
 
     // Preload KaiAds
     window.requestAnimationFrame(this.checkForUpdates.bind(this));
-    window.requestAnimationFrame(this.preloadKaiAds.bind(this));
   }
 
   private isInterstitialVisible(): boolean {
@@ -250,6 +257,7 @@ export class GameState extends State {
   private onAdClose() {
     this.kaiad = null;
     this.adVisible = false;
+    document.body.classList.remove('ad-visible');
     window.requestAnimationFrame(this.minimizeMemoryUsage.bind(this));
     window.setTimeout(this.preloadKaiAds.bind(this), AD_TIMEOUT);
   }
@@ -262,7 +270,7 @@ export class GameState extends State {
 
     const renderInterstitial = (Math.random() > INTERSTITIAL_RATE);
 
-    if (renderInterstitial) {
+    if (!this.kaiad && renderInterstitial) {
       this.setInterstitialVisibility(true);
     } else if (this.kaiad) {
       this.kaiad.on('close', this.onAdClose.bind(this));
@@ -270,6 +278,7 @@ export class GameState extends State {
 
       this.kaiad.call('display');
       this.adVisible = true;
+      document.body.classList.add('ad-visible');
     }
   }
 
@@ -284,7 +293,7 @@ export class GameState extends State {
   }
 
   setDefaultMute() {
-    const mute = Boolean((localStorage.getItem('mute') || '1') === '1');
+    const mute = Boolean((localStorage.getItem('mute') || DEFAULT_MUTE) === '1');
     this.game.sound.mute = mute;
     this.setMuteIcon(mute);
   }
@@ -469,7 +478,7 @@ export class GameState extends State {
    */
   teleport(unit: Pacman | Ghost, portal: Portal) {
     const { x, y } = this.portals
-      .filter(p => p.props.i === portal.props.target)
+      .filter((p) => p.props.i === portal.props.target)
       .list[0];
 
     unit.teleport(portal.x, portal.y, x, y);
@@ -613,7 +622,8 @@ export class GameState extends State {
         this.onLostLife(pacman);
       }
 
-      window.setTimeout(this.renderKaiAds.bind(this), 500);
+      window.requestAnimationFrame(this.preloadKaiAds.bind(this));
+      window.setTimeout(this.renderKaiAds.bind(this), 1000);
     }
   }
 
@@ -807,7 +817,7 @@ export class GameState extends State {
   }
 
   private onBeforeExit() {
-    const c = confirm('Quit Pak-Man?');
+    const c = confirm('Exit Pak-Man?');
     if (c) {
       this.setAudioChannel('normal');
       this.releaseWakeLock();

@@ -154,6 +154,13 @@ canvas {
 
 [hidden], [aria-hidden="true"] {
     display: none !important;
+    -moz-user-focus: ignore !important;
     visibility: hidden;
     opacity: 0;
+}
+
+:root > body:not(.ad-visible) > iframe {
+    display: none !important;
+    visibility: hidden !important;
+    -moz-user-focus: ignore !important;
 }
