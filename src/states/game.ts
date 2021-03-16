@@ -9,6 +9,8 @@ import { Ghost } from '../objects/ghost';
 import { MozWakeLock } from '../utils/mozwakelock';
 import { Kaiad } from '../utils/kaiad';
 import { isUpdateAvailable, goToStore, openAppPromise } from '../utils/update';
+import { setAudioChannel, minimizeMemoryUsage } from '../utils/helpers';
+import { requestWakeLock } from '../utils/mozwakelock';
 import {
   getObjectsByType,
   getRespawnPoint,
@@ -91,7 +93,6 @@ export class GameState extends State {
 
   enterKey: Phaser.Key;
   spaceKey: Phaser.Key;
-  backKey: Phaser.Key;
 
   muteIcon: Phaser.Sprite;
   unmuteIcon: Phaser.Sprite;
@@ -125,37 +126,6 @@ export class GameState extends State {
     this.active = true;
   }
 
-  minimizeMemoryUsage() {
-    try {
-      if (typeof window.navigator['minimizeMemoryUsage'] === 'function') {
-        window.navigator['minimizeMemoryUsage']();
-      }
-    } catch (_) { }
-  }
-
-  requestWakeLock() {
-    try {
-      if (!this.screenLock && typeof window.navigator['requestWakeLock'] === 'function') {
-        this.screenLock = window.navigator['requestWakeLock']('screen');
-        this.cpuLock = window.navigator['requestWakeLock']('cpu');
-      }
-    } catch (_) { }
-  }
-
-  releaseWakeLock() {
-    try {
-      if (this.screenLock && typeof this.screenLock['unlock'] === 'function') {
-        this.screenLock.unlock();
-        this.screenLock = null;
-      }
-
-      if (this.cpuLock && typeof this.cpuLock['unlock'] === 'function') {
-        this.cpuLock.unlock();
-        this.cpuLock = null;
-      }
-    } catch (_) { }
-  }
-
   create() {
     this.setTiles();
     this.initLayers();
@@ -178,11 +148,11 @@ export class GameState extends State {
 
     // KaiOS-specific
     this.bindAppInterstitial();
-    this.requestWakeLock();
-    this.minimizeMemoryUsage();
+    requestWakeLock();
+    minimizeMemoryUsage();
 
     // Audio content
-    this.setAudioChannel('content');
+    setAudioChannel('content');
     this.sfx.intro.play();
 
     // Preload KaiAds
@@ -258,8 +228,14 @@ export class GameState extends State {
     this.kaiad = null;
     this.adVisible = false;
     document.body.classList.remove('ad-visible');
-    window.requestAnimationFrame(this.minimizeMemoryUsage.bind(this));
+    window.requestAnimationFrame(minimizeMemoryUsage);
     window.setTimeout(this.preloadKaiAds.bind(this), AD_TIMEOUT);
+  }
+
+  private pauseIfStarted() {
+    if (this.pacman && this.pacman.hasStarted()) {
+      this.pause();
+    }
   }
 
   private renderKaiAds() {
@@ -272,6 +248,7 @@ export class GameState extends State {
 
     if (!this.kaiad && renderInterstitial) {
       this.setInterstitialVisibility(true);
+      this.pauseIfStarted();
     } else if (this.kaiad) {
       this.kaiad.on('close', this.onAdClose.bind(this));
       this.kaiad.on('click', this.onAdClose.bind(this));
@@ -279,6 +256,7 @@ export class GameState extends State {
       this.kaiad.call('display');
       this.adVisible = true;
       document.body.classList.add('ad-visible');
+      this.pauseIfStarted();
     }
   }
 
@@ -797,6 +775,11 @@ export class GameState extends State {
     };
   }
 
+  private pause() {
+    this.game.paused = true;
+    this.showNotification('paused', true);
+  }
+
   private togglePause() {
     const willPause = !this.game.paused;
 
@@ -816,26 +799,6 @@ export class GameState extends State {
     this.setMuteIcon(this.game.sound.mute);
   }
 
-  private onBeforeExit() {
-    const c = confirm('Exit Pak-Man?');
-    if (c) {
-      this.setAudioChannel('normal');
-      this.releaseWakeLock();
-      window.close();
-    }
-  }
-
-  private setAudioChannel(channel) {
-    try {
-      if (typeof window.navigator['mozAudioChannelManager'] === 'object') {
-        window.navigator['mozAudioChannelManager']['volumeControlChannel'] = channel;
-        return (window.navigator['mozAudioChannelManager']['volumeControlChannel'] === channel);
-      }
-    } catch (_) { }
-  
-    return false;
-  }
-
   private onPressCallback(_, e: KeyboardEvent) {
     if (this.adVisible) {
       return true;
@@ -851,13 +814,6 @@ export class GameState extends State {
     }
   
     switch (e.key) {
-      case 'GoBack':
-      case 'Escape':
-      case 'Backspace':
-      case 'EndCall':
-        this.onBeforeExit();
-        e.preventDefault();
-        return true;
       case 'SoftRight':
         this.toggleMute();
         e.preventDefault();
@@ -912,8 +868,6 @@ export class GameState extends State {
     this.controls = this.input.keyboard.createCursorKeys();
     this.spaceKey = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
     this.enterKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-    this.backKey = this.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-    this.backKey.onDown.add(this.onBeforeExit.bind(this));
     this.enterKey.onDown.add(this.onEnterPress.bind(this));
     this.spaceKey.onDown.add(this.onEnterPress.bind(this));
   }

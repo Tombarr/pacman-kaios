@@ -5,6 +5,8 @@ import * as Phaser from 'phaser';
 import { BootState } from './states/boot';
 import { PreloadState } from './states/preload';
 import { GameState } from './states/game';
+import { setAudioChannel } from './utils/helpers';
+import { releaseWakeLock } from './utils/mozwakelock';
 
 /**
  * Main game object.
@@ -51,5 +53,35 @@ export class PacmanGame extends Phaser.Game {
 
     const pacmanGame = new PacmanGame(config);
     pacmanGame.clearBeforeRender = false;
+
+    function onBeforeExit() {
+      const c = confirm('Exit Pak-Man?');
+      if (c) {
+        setAudioChannel('normal');
+        releaseWakeLock();
+        window.requestAnimationFrame(() => window.close());
+      }
+    }
+
+    function onKeyDown(event) {
+      switch (event.key) {
+        case 'GoBack':
+        case 'Escape':
+        case 'Backspace':
+          onBeforeExit();
+          event.preventDefault();
+          return true;
+      }
+    }
+
+    function onVisibilityChange() {
+      // Pause game if screen turns off (i.e. flip closed)
+      if (document.hidden || document.visibilityState === 'hidden') {
+        pacmanGame.paused = true;
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('visibilitychange', onVisibilityChange);
   };
 })();

@@ -9,7 +9,6 @@
     "56": "/PakMan_56.png",
     "112": "/PakMan_112.png"
   },
-  "fullscreen": "true",
   "developer": {
     "name": "Last Byte LLC",
     "url": "https://github.com/Tombarr"
@@ -22,7 +21,9 @@
     "*"
   ],
   "permissions": {
-    "audio-channel-content": { }
+    "audio-channel-content": { },
+    "mobiledata": { },
+    "wifidata": { }
   },
   "locales": {
     "en-US": {
@@ -35,6 +36,7 @@
   "orientation": "portrait",
   "cursor": false,
   "ime_default_softkey_bar": false,
+  "background_color": "transparent",
   "chrome": {
     "navigation": false,
     "statusbar": "overlap"
