@@ -7,6 +7,7 @@ import { PreloadState } from './states/preload';
 import { GameState } from './states/game';
 import { setAudioChannel } from './utils/helpers';
 import { releaseWakeLock } from './utils/mozwakelock';
+import { isUpdateAvailable, goToStore } from './utils/update';
 
 /**
  * Main game object.
@@ -37,6 +38,24 @@ export class PacmanGame extends Phaser.Game {
    * Initialize game on page load.
    */
   window.onload = () => {
+    function showUpdatePrompt() {
+      const c = confirm('An update is available, install from the store now?');
+      if (c) {
+        goToStore()
+          .catch((e) => console.warn(e));
+      }
+    }
+  
+    function checkForUpdates() {
+      isUpdateAvailable()
+        .then((downloadAvailable) => {
+          if (downloadAvailable) {
+            showUpdatePrompt();
+          }
+        })
+        .catch((e) => console.warn(e));
+    }
+
     const config: Phaser.IGameConfig = {
       width: 448,
       height: 576,
@@ -83,5 +102,6 @@ export class PacmanGame extends Phaser.Game {
 
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('visibilitychange', onVisibilityChange);
+    window.requestAnimationFrame(checkForUpdates);
   };
 })();

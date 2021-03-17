@@ -8,7 +8,7 @@ import { Pacman } from '../objects/pacman';
 import { Ghost } from '../objects/ghost';
 import { MozWakeLock } from '../utils/mozwakelock';
 import { Kaiad } from '../utils/kaiad';
-import { isUpdateAvailable, goToStore, openAppPromise } from '../utils/update';
+import { openAppPromise } from '../utils/update';
 import { setAudioChannel, minimizeMemoryUsage } from '../utils/helpers';
 import { requestWakeLock } from '../utils/mozwakelock';
 import {
@@ -154,9 +154,6 @@ export class GameState extends State {
     // Audio content
     setAudioChannel('content');
     this.sfx.intro.play();
-
-    // Preload KaiAds
-    window.requestAnimationFrame(this.checkForUpdates.bind(this));
   }
 
   private isInterstitialVisible(): boolean {
@@ -320,24 +317,6 @@ export class GameState extends State {
     this.pacman.updatePosition(this.map, this.wallsLayer.index);
 
     this.checkControls();
-  }
-
-  private showUpdatePrompt() {
-    const c = confirm('An update is available, install from the store now?');
-    if (c) {
-      goToStore()
-        .catch((e) => console.warn(e));
-    }
-  }
-
-  private checkForUpdates() {
-    isUpdateAvailable()
-      .then((downloadAvailable) => {
-        if (downloadAvailable) {
-          this.showUpdatePrompt();
-        }
-      })
-      .catch((e) => console.warn(e));
   }
 
   /**
