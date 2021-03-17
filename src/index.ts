@@ -87,8 +87,8 @@ export class PacmanGame extends Phaser.Game {
         case 'GoBack':
         case 'Escape':
         case 'Backspace':
-          onBeforeExit();
           event.preventDefault();
+          onBeforeExit();
           return true;
       }
     }
