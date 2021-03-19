@@ -4,7 +4,7 @@ Pac-Man game built for [KaiOS](https://www.kaiostech.com/) smart feature phones,
 
 🎮 [Play PWA](https://vitaliy-bobrov.github.io/pacman-pwa/)
 
-Pak-Man is integrated with KaiAds (per the KaiStore Distribution Agreement) and optimized for 240x230 screens.
+Pak-Man is integrated with KaiAds (per [KaiStore Distribution Agreement](https://www.kaiostech.com/sub-agreement/)) and optimized for 240x320 screens.
 
 Ready!  | Level 1 Completed | Homescreen
 ------ | ------|----------
