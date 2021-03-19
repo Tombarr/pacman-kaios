@@ -1,6 +1,6 @@
 const path = require('path');
 require('webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
@@ -99,16 +99,26 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new CopyWebpackPlugin([
-      {
-        from: path.join(__dirname, 'assets/**/*'),
-        to: path.join(__dirname, 'dist/assets/')
-      },
-      {
-        from: path.join(__dirname, 'src/*.{js,ico,png,svg,xml,webapp,css}'),
-        to: path.join(__dirname, 'dist/')
-      }
-    ]),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.join(__dirname, 'assets/**/*'),
+          to: path.join(__dirname, 'dist/assets/'),
+        },
+        {
+          from: path.join(__dirname, 'src/**/*'),
+          to: path.join(__dirname, 'dist/'),
+          globOptions: {
+            ignore: [
+              "**/*.json",
+              "**/*.ts",
+              "**/*.ts",
+              "**/*.html"
+            ]
+          },
+        },
+      ],
+    }),
     new HtmlWebpackPlugin({
       title: 'Pacman PWA',
       inject: 'head',
