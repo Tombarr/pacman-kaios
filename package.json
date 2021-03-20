@@ -16,6 +16,7 @@
     "url": "git+https://github.com/Tombarr/pacman-kaios.git"
   },
   "author": "Tom Barrasso <tom@barrasso.me> (https://barrasso.me)",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Tombarr/pacman-kaios/issues"
   },
