@@ -1,11 +1,11 @@
 {
   "name": "pacman-kaios",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Pac-Man for KaiOS",
   "main": "index.ts",
   "scripts": {
     "start": "webpack-dev-server --inline --hot --port 3000",
-    "build": "webpack",
+    "build": "NODE_ENV=development webpack",
     "build:prod": "NODE_ENV=production webpack",
     "deploy": "gh-pages -d dist",
     "lint": "tslint src/**/*.ts",
@@ -39,6 +39,6 @@
     "webpack": "^5.24.4",
     "webpack-cli": "^4.5.0",
     "webpack-copy-plugin": "^0.0.4",
-    "webpack-dev-server": "^3.8.2"
+    "webpack-dev-server": "^3.11.2"
   }
 }

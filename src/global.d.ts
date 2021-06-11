@@ -8,6 +8,12 @@ declare interface DOMRequest {
     result: any;
 }
 
+declare class WebActivity {
+    constructor(name: string, data?: object);  
+    start(): Promise<any>;
+    cancel(): void;
+}
+
 declare interface MozActivityOptions {
     name: string;
     data?: Object;

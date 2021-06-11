@@ -7,12 +7,25 @@ let screenLock = null;
 let cpuLock = null;
 
 export function requestWakeLock(): void {
-    try {
-        if (!screenLock && typeof window.navigator['requestWakeLock'] === 'function') {
-            screenLock = window.navigator['requestWakeLock']('screen');
-            cpuLock = window.navigator['requestWakeLock']('cpu');
-        }
-    } catch (_) { }
+  if (screenLock) {
+    return;
+  }
+
+  try {
+    // KaiOS 2.5
+    if (typeof window.navigator['requestWakeLock'] === 'function') {
+        screenLock = window.navigator['requestWakeLock']('screen');
+        cpuLock = window.navigator['requestWakeLock']('cpu');
+    }
+
+    // KaiOS 3.0
+    if (typeof window.navigator['b2g'] === 'object') {
+      if (typeof window.navigator['b2g']['requestWakeLock'] === 'function') {
+        screenLock = window.navigator['b2g']['requestWakeLock']('screen');
+        cpuLock = window.navigator['b2g']['requestWakeLock']('cpu');
+      }
+    }
+  } catch (_) { }
 }
 
 

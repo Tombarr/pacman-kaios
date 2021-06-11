@@ -4,3 +4,5 @@ Thumbs.db
 *.log
 node_modules/
 dist/
+ads-sdk.v5.min.js
+kaiads.v4.min.js

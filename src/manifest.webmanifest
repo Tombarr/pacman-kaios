@@ -1,0 +1,47 @@
+{
+  "name": "Pak-Man",
+  "short_name": "Pak-Man",
+  "start_url": "/index.html",
+  "orientation": "portrait",
+  "dir": "auto",
+  "lang": "en-US",
+  "display": "standalone",
+  "background_color": "#000000",
+  "description": "Play the classic game Pak-Man anytime, anywhere. Pak-Man is designed for KaiOS and based on Pac-Man (Japanese: パックマン), the 1980 classic arcade game. Pak-Man is not affiliated with nor endorsed by Bandai Namco Entertainment.",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "icons": [{
+    "src": "/PakMan_56.png",
+    "type": "image/png",
+    "sizes": "56x56"
+  }, {
+    "src": "/PakMan_112.png",
+    "type": "image/png",
+    "sizes": "112x112"
+  }],
+  "b2g_features": {
+    "display": "Pak-Man",
+    "version": "1.0.4",
+    "subtitle": "The classic arcade game Pac-Man on KaiOS",
+    "type": "privileged",
+    "developer": {
+      "name": "Last Byte LLC",
+      "url": "https://github.com/Tombarr"
+    },
+    "default_locale": "en-US",
+    "cursor": false,
+    "ime_default_softkey_bar": false,
+    "chrome": {
+      "statusbar": "overlap"
+    },
+    "permissions": {
+      "audio-channel-normal": { },
+      "audio-channel-content": { }
+    },
+    "activities": {
+      "open-pakman": { }
+    }
+  }
+}
