@@ -1,4 +1,5 @@
 {
+  "id": "pakman",
   "name": "Pak-Man",
   "short_name": "Pak-Man",
   "start_url": "/index.html",
@@ -23,7 +24,7 @@
   }],
   "b2g_features": {
     "display": "Pak-Man",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "subtitle": "The classic arcade game Pac-Man on KaiOS",
     "type": "privileged",
     "developer": {

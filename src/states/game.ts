@@ -42,7 +42,7 @@ export const AD_TIMEOUT = 45 * 1000; // 45s
 
 // Manifest URL to launch KaiStore for PodLP
 export const INTERSTITIAL_MANIFEST_URL = 'https://api.kaiostech.com/apps/manifest/UxappJMyyWGDpPORzsyl';
-const INTERSTITIAL_RATE = 0.5; // 50%
+const INTERSTITIAL_RATE = 0.75; // 25%
 
 export function getAd(test: Number = 0): Promise<Kaiad|null> {
   return new Promise((resolve, reject) => {
