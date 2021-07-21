@@ -24,11 +24,6 @@ Ready!  | Level 1 Completed | Homescreen
 Built files are stored in a `dist` folder. To run the game, a static server is needed.
 
 - With NodeJS:
-  - Using yarn:
-
-  ```bash
-  yarn && npm start
-  ```
 
   - Using npm:
 
