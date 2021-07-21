@@ -127,7 +127,6 @@ module.exports = {
     ...PLUGINS
   ],
   devServer: {
-    contentBase: outputPath,
     compress: true,
     port: 3000
   }
